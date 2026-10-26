@@ -8,7 +8,15 @@ const tiffCache = new Map<string, Promise<any>>();
 
 async function getTiffFromCache(url: string) {
   if (!tiffCache.has(url)) {
-    tiffCache.set(url, GeoTIFF.fromUrl(url, { forceXHR: true }));
+    const download: Promise<any> = GeoTIFF.fromUrl(url, {
+      forceXHR: true,
+    }).catch((error) => {
+      if (tiffCache.get(url) === download) {
+        tiffCache.delete(url);
+      }
+      throw error;
+    });
+    tiffCache.set(url, download);
   }
   return tiffCache.get(url)!;
 }
